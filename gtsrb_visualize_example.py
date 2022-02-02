@@ -250,7 +250,7 @@ def gtsrb_visualize_label_scan_bottom_right_white_4():
 def main():
 
     #os.environ["CUDA_VISIBLE_DEVICES"] = DEVICE
-    utils_backdoor.fix_gpu_memory()
+    #utils_backdoor.fix_gpu_memory()
     gtsrb_visualize_label_scan_bottom_right_white_4()
 
     pass
