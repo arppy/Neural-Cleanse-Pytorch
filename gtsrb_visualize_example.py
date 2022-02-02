@@ -112,7 +112,7 @@ def visualize_trigger_w_mask(visualizer, gen, y_target,
     visualize_start_time = time.time()
 
     # initialize with random mask
-    pattern = np.random.random(INPUT_SHAPE) * 255.0
+    pattern = np.random.random(INPUT_SHAPE)
     mask = np.random.random(MASK_SHAPE)
 
     # execute reverse engineering
@@ -146,20 +146,23 @@ def save_pattern(pattern, mask, y_target):
     img_filename = (
         '%s/%s' % (RESULT_DIR,
                    IMG_FILENAME_TEMPLATE % ('pattern', y_target)))
-    utils_backdoor.dump_image(pattern, img_filename, 'png')
+    torch_out_pattern = torch.from_numpy(pattern * 255).byte()
+    utils_backdoor.dump_image(torch_out_pattern * 255, img_filename, 'png')
 
     img_filename = (
         '%s/%s' % (RESULT_DIR,
                    IMG_FILENAME_TEMPLATE % ('mask', y_target)))
-    utils_backdoor.dump_image(np.expand_dims(mask, axis=2) * 255,
+    torch_out_mask = torch.from_numpy(np.expand_dims(mask, axis=0) * 255).byte()
+    utils_backdoor.dump_image(torch_out_mask,
                               img_filename,
                               'png')
 
-    fusion = np.multiply(pattern, np.expand_dims(mask, axis=2))
+    fusion = np.multiply(pattern, np.expand_dims(mask, axis=0))
+    torch_out_fusion = torch.from_numpy(fusion * 255).byte()
     img_filename = (
         '%s/%s' % (RESULT_DIR,
                    IMG_FILENAME_TEMPLATE % ('fusion', y_target)))
-    utils_backdoor.dump_image(fusion, img_filename, 'png')
+    utils_backdoor.dump_image(torch_out_fusion, img_filename, 'png')
 
     pass
 
