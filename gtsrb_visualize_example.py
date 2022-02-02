@@ -42,7 +42,7 @@ IMG_FILENAME_TEMPLATE = 'cifar10_visualize_%s_label_%d.png'
 IMG_ROWS = 32
 IMG_COLS = 32
 IMG_COLOR = 3
-INPUT_SHAPE = (IMG_ROWS, IMG_COLS, IMG_COLOR)
+INPUT_SHAPE = (IMG_COLOR, IMG_ROWS, IMG_COLS)
 
 NUM_CLASSES = 10  # total number of classes in the model
 Y_TARGET = 3  # (optional) infected target label, used for prioritizing label scanning
