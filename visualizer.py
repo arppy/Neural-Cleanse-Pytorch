@@ -24,7 +24,7 @@ class Visualizer:
     # mnist: [0, 1]
     # imagenet: imagenet mean centering
     # inception: [-1, 1]
-    INTENSITY_RANGE = 'raw'
+    INTENSITY_RANGE = 'mnist'
     # type of regularization of the mask
     REGULARIZATION = 'l1'
     # threshold of attack success rate for dynamically changing cost
@@ -41,7 +41,8 @@ class Visualizer:
     MASK_MAX = 1
     # min/max of raw pixel intensity
     COLOR_MIN = 0
-    COLOR_MAX = 255
+    COLOR_MAX = 1
+    #COLOR_MAX = 255
     # number of color channel
     IMG_COLOR = 3
     # whether to shuffle during each epoch
@@ -67,7 +68,7 @@ class Visualizer:
     # dir to save intermediate masks
     TMP_DIR = 'tmp'
     # whether input image has been preprocessed or not
-    RAW_INPUT_FLAG = False
+    RAW_INPUT_FLAG = True
     # device
     use_cuda = torch.cuda.is_available()
     DEVICE = torch.device('cuda' if use_cuda else 'cpu')
@@ -195,7 +196,8 @@ class Visualizer:
 
         # convert to tanh space
         mask_tanh = np.arctanh((mask - 0.5) * (2 - self.epsilon))
-        pattern_tanh = np.arctanh((pattern / 255.0 - 0.5) * (2 - self.epsilon))
+        pattern_tanh = np.arctanh((pattern - 0.5) * (2 - self.epsilon))
+        #pattern_tanh = np.arctanh((pattern / 255.0 - 0.5) * (2 - self.epsilon))
         print('mask_tanh', np.min(mask_tanh), np.max(mask_tanh))
         print('pattern_tanh', np.min(pattern_tanh), np.max(pattern_tanh))
 
