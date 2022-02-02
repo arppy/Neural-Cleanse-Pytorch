@@ -177,6 +177,7 @@ class Visualizer:
     def reset_state(self, pattern_init, mask_init):
 
         print('resetting state')
+        print('self.input_shape',self.input_shape)
 
         # setting cost
         if self.reset_cost_to_zero:
@@ -189,11 +190,13 @@ class Visualizer:
 
         # setting mask and pattern
         mask = mask_init
+        print("mask.shape - init",mask.shape)
         pattern = pattern_init
         mask = np.clip(mask, self.mask_min, self.mask_max)
+        print("mask.shape - clip",mask.shape)
         pattern = np.clip(pattern, self.color_min, self.color_max)
         mask = np.expand_dims(mask, axis=0)
-
+        print("mask.shape - expand dims",mask.shape)
         # convert to tanh space
         mask_tanh = np.arctanh((mask - 0.5) * (2 - self.epsilon))
         pattern_tanh = np.arctanh((pattern - 0.5) * (2 - self.epsilon))
@@ -206,24 +209,30 @@ class Visualizer:
 
         # prepare mask related tensors
         self.mask_tanh_tensor = torch.Tensor(mask_tanh)
+        print("mask.shape",mask.shape)
         #mask_tensor_unrepeat = (torch.tanh(self.mask_tanh_tensor) / (2. - self.epsilon) + 0.5)
         #print("check repeat: ", mask_tensor_unrepeat.shape, mask_tensor_unrepeat)
         #mask_tensor_unexpand = mask_tensor_unrepeat.repeat(self.img_color, 1, 1)
         mask_tensor_unexpand = self.mask_tanh_tensor.repeat(self.img_color, 1, 1)
+        print("mask_tensor_unexpand.shape",mask_tensor_unexpand.shape)
         # (3, 32, 32) [[[0.5000 ... ]]]
         #print("check after repeat: ", mask_tensor_unexpand.shape, mask_tensor_unexpand)
         self.mask_tensor = mask_tensor_unexpand.unsqueeze(0)
+        print("self.mask_tensor.shape",self.mask_tensor.shape)
         upsample_layer = nn.UpsamplingNearest2d(
             scale_factor=(self.upsample_size, self.upsample_size))
         mask_upsample_tensor_uncrop = upsample_layer(self.mask_tensor)
+        print("mask_upsample_tensor_uncrop.shape",mask_upsample_tensor_uncrop.shape)
         # uncrop_shape = mask_upsample_tensor_uncrop[2:]
         #print("check mask upsample uncrop: ", type(mask_upsample_tensor_uncrop), mask_upsample_tensor_uncrop.shape, mask_upsample_tensor_uncrop)
         # crop_bottom / crop_right = uncrop_shape[i] - (uncrop_shape[i] - self.input_shape[i]) = self.input_shape[i]
         self.mask_upsample_tensor = mask_upsample_tensor_uncrop[:, :, :self.input_shape[1], :self.input_shape[2]]
+        print("self.mask_upsample_tensor.shape",self.mask_upsample_tensor.shape) 
         self.mask_upsample_tensor.requires_grad = True
 
         # prepare pattern related tensors
         self.pattern_tanh_tensor = torch.Tensor(pattern_tanh).unsqueeze(0)
+        print("self.pattern_tanh_tensor.shape",self.pattern_tanh_tensor.shape)
         #self.pattern_raw_tensor = ((torch.tanh(self.pattern_tanh_tensor) / (2. - self.epsilon) + 0.5) * 255.0)
         #self.pattern_raw_tensor.requires_grad = True
         self.pattern_tanh_tensor.requires_grad = True
@@ -326,20 +335,23 @@ class Visualizer:
                 self.mask_img_space = torch.tanh(self.mask_upsample_tensor) / (2. - self.epsilon) + 0.5 
                 self.pattern_raw_tensor = ((torch.tanh(self.pattern_tanh_tensor) / (2. - self.epsilon) + 0.5) )
                 reverse_mask_tensor = (torch.ones_like(self.mask_img_space) - self.mask_img_space)
+                #print(reverse_mask_tensor.shape, input_raw_tensor.shape, self.mask_img_space.shape, self.pattern_raw_tensor.shape)
                 X_adv_raw_tensor = (
                     reverse_mask_tensor * input_raw_tensor +
                     self.mask_img_space * self.pattern_raw_tensor)
                 X_adv_raw_tensor = X_adv_raw_tensor.to(self.device)
+                #print("X_adv_raw_tensor.shape",X_adv_raw_tensor.shape)
                 if X_batch.shape[0] != Y_target.shape[0]:
                     Y_target = torch.from_numpy(np.array( [y_target] * X_batch.shape[0]) ).long()
 
                 #1print("check input: ", X_adv_raw_tensor)
-                output_tensor, _ = self.model(X_adv_raw_tensor)
+                #output_tensor, _ = self.model(X_adv_raw_tensor)
                 # print("check output: ", output_tensor)
                 Y_target = Y_target.to(self.device)
                 # print("check target: ", Y_target)
                 # accuracy for target label
-                y_pred = F.softmax(output_tensor, dim=1)
+                #y_pred = F.softmax(output_tensor, dim=1)
+                y_pred = self.model(X_adv_raw_tensor)
                 indices = torch.argmax(y_pred, 1)
                 correct = torch.eq(indices, Y_target)
                 loss_acc = torch.sum(correct).cpu().detach().item()
@@ -349,7 +361,8 @@ class Visualizer:
                 used_samples += X_batch.shape[0]
                 
                 # crossentropy loss
-                loss_ce = ce_loss(output_tensor, Y_target)
+                #loss_ce = ce_loss(output_tensor, Y_target)
+                loss_ce = ce_loss(y_pred, Y_target)
                 # print("is here?", loss_ce) # 5.1791
                 loss_ce_list.append(loss_ce.cpu().detach().item())
 
