@@ -71,7 +71,7 @@ EARLY_STOP_PATIENCE = 5 * PATIENCE  # patience for early stop
 # the following part is not used in our experiment
 # but our code implementation also supports super-pixel mask
 UPSAMPLE_SIZE = 1  # size of the super pixel
-MASK_SHAPE = np.ceil(np.array(INPUT_SHAPE[0:2], dtype=float) / UPSAMPLE_SIZE)
+MASK_SHAPE = np.ceil(np.array(INPUT_SHAPE[1:3], dtype=float) / UPSAMPLE_SIZE)
 MASK_SHAPE = MASK_SHAPE.astype(int)
 
 PRED_THRESHOLD = 64.93129
