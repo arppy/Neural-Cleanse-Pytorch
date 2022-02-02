@@ -20,7 +20,7 @@ from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 ##############################
 #        PARAMETERS          #
 ##############################

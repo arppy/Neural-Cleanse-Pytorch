@@ -13,7 +13,7 @@ import utils_backdoor
 import os
 from decimal import Decimal
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 class Visualizer:
 
